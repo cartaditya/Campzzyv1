@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import {
   Mic, MicOff, Video, VideoOff, MessageSquare,
   Plus, X, Bell, LogOut, Gamepad2, Zap,
@@ -72,13 +73,22 @@ type IdleOrb = {
   delay: number;
 };
 
+function seededRandom(seed: number) {
+  const value = Math.sin(seed) * 10000;
+  return value - Math.floor(value);
+}
+
+function randomInRange(min: number, max: number, seed: number) {
+  return min + (max - min) * seededRandom(seed);
+}
+
 const IDLE_ORBS: IdleOrb[] = [
-  { id: "am", initials: "AM", color: "#4DD9C0", x: 12, y: 16, size: 48, dx: 10, dy: -12, duration: 10.4, delay: 0 },
-  { id: "nm", initials: "NM", color: "#60A5FA", x: 82, y: 24, size: 48, dx: -12, dy: 11, duration: 11.1, delay: 0.5 },
-  { id: "at", initials: "AT", color: "#A78BFA", x: 16, y: 50, size: 48, dx: 8, dy: 12, duration: 9.7, delay: 1.1 },
-  { id: "ra", initials: "RA", color: "#4DD9C0", x: 80, y: 56, size: 48, dx: -10, dy: -10, duration: 12.0, delay: 1.7 },
-  { id: "lt", initials: "LT", color: "#60A5FA", x: 24, y: 76, size: 48, dx: 11, dy: -8, duration: 10.8, delay: 2.1 },
-  { id: "sk", initials: "SK", color: "#F472B6", x: 72, y: 82, size: 48, dx: -9, dy: 10, duration: 9.9, delay: 2.6 },
+  { id: "am", initials: "AM", color: "#4DD9C0", x: randomInRange(10, 24, 1), y: randomInRange(10, 24, 2), size: 48, dx: randomInRange(7, 13, 3), dy: randomInRange(-12, -6, 4), duration: randomInRange(4.6, 6.2, 5), delay: randomInRange(0, 1.1, 6) },
+  { id: "nm", initials: "NM", color: "#60A5FA", x: randomInRange(72, 88, 7), y: randomInRange(12, 28, 8), size: 48, dx: randomInRange(-13, -7, 9), dy: randomInRange(7, 13, 10), duration: randomInRange(5.2, 6.9, 11), delay: randomInRange(0.3, 1.4, 12) },
+  { id: "at", initials: "AT", color: "#A78BFA", x: randomInRange(14, 30, 13), y: randomInRange(40, 56, 14), size: 48, dx: randomInRange(6, 12, 15), dy: randomInRange(8, 14, 16), duration: randomInRange(4.8, 6.5, 17), delay: randomInRange(0.6, 1.7, 18) },
+  { id: "ra", initials: "RA", color: "#4DD9C0", x: randomInRange(68, 86, 19), y: randomInRange(42, 60, 20), size: 48, dx: randomInRange(-12, -6, 21), dy: randomInRange(-12, -7, 22), duration: randomInRange(5.4, 7.2, 23), delay: randomInRange(0.9, 2.0, 24) },
+  { id: "lt", initials: "LT", color: "#60A5FA", x: randomInRange(12, 28, 25), y: randomInRange(70, 88, 26), size: 48, dx: randomInRange(7, 13, 27), dy: randomInRange(-11, -6, 28), duration: randomInRange(4.4, 6.1, 29), delay: randomInRange(1.2, 2.3, 30) },
+  { id: "sk", initials: "SK", color: "#F472B6", x: randomInRange(70, 90, 31), y: randomInRange(72, 90, 32), size: 48, dx: randomInRange(-11, -6, 33), dy: randomInRange(7, 12, 34), duration: randomInRange(5.8, 7.8, 35), delay: randomInRange(1.5, 2.6, 36) },
 ];
 
 function getNearestOrbLinks(orbs: IdleOrb[]) {
@@ -759,7 +769,7 @@ export function ArenaPage() {
 
       {/* ── CHALLENGE TOASTS ── */}
       {pendingChallenges.map((c) => (
-        <div key={c.id} style={{ position: "fixed", top: "16px", right: "16px", zIndex: 9999, display: "flex", alignItems: "center", gap: "10px", background: "#1a5c2a", border: `1px solid ${T.border}`, borderRadius: "10px", padding: "12px 14px", width: "256px", animation: "challenge-toast-in 0.22s cubic-bezier(0.16,1,0.3,1)", overflow: "hidden" }}>
+        <motion.div key={c.id} initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.4, ease: "easeOut" }} style={{ position: "fixed", top: "16px", right: "16px", zIndex: 9999, display: "flex", alignItems: "center", gap: "10px", background: "#1a5c2a", border: `1px solid ${T.border}`, borderRadius: "10px", padding: "12px 14px", width: "256px", overflow: "hidden" }}>
           <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(120deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01), rgba(255,255,255,0.03))", animation: "pitch-pan 12s linear infinite" }} />
           <div style={{ position: "absolute", top: "50%", left: "50%", width: "70px", height: "70px", borderRadius: "50%", border: "1px solid rgba(255,255,255,0.22)", transform: "translate(-50%, -50%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", top: 0, bottom: 0, left: "50%", width: "1px", background: "rgba(255,255,255,0.22)", transform: "translateX(-50%)", pointerEvents: "none" }} />
@@ -776,7 +786,7 @@ export function ArenaPage() {
               <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><line x1="1.5" y1="1.5" x2="10.5" y2="10.5" stroke="#ffffff" strokeWidth="1.7" strokeLinecap="round"/><line x1="10.5" y1="1.5" x2="1.5" y2="10.5" stroke="#ffffff" strokeWidth="1.7" strokeLinecap="round"/></svg>
             </button>
           </div>
-        </div>
+        </motion.div>
       ))}
 
       {/* ── GAME START MODAL ── */}
@@ -1087,7 +1097,7 @@ function FloatingAvatarCircle({ orb }: { orb: IdleOrb }) {
   const visual = orbVisuals[orb.color];
 
   return (
-    <div
+    <motion.div
       style={{
         position: "absolute",
         left: `${orb.x}%`,
@@ -1104,15 +1114,12 @@ function FloatingAvatarCircle({ orb }: { orb: IdleOrb }) {
         fontWeight: 700,
         color: "#FFFFFF",
         transform: "translate(-50%, -50%)",
-        animation: `orb-drift ${orb.duration}s ease-in-out ${orb.delay}s infinite`,
         boxShadow: `0 0 15px ${visual.glowA}, 0 0 30px ${visual.glowB}`,
-        // @ts-ignore CSS custom properties used by keyframes for drift offsets.
-        "--dx": `${orb.dx}px`,
-        // @ts-ignore CSS custom properties used by keyframes for drift offsets.
-        "--dy": `${orb.dy}px`,
       }}
+      animate={{ x: [0, orb.dx, 0], y: [0, orb.dy, 0] }}
+      transition={{ duration: orb.duration, delay: orb.delay, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
     >
       {orb.initials}
-    </div>
+    </motion.div>
   );
 }
