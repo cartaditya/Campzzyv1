@@ -146,6 +146,9 @@ export function ArenaPage() {
   /* ─ notifications ─ */
   const [notifSeen, setNotifSeen]   = useState(false);
 
+  /* ─ calling state scanning ─ */
+  const [isRightSideScanning, setIsRightSideScanning] = useState(false);
+
   /* ─ challenge toasts ─ */
   const [challenges, setChallenges] = useState<GameChallenge[]>([
     { id: 1, name: "Riya", game: "Chess", dismissed: false },
@@ -247,12 +250,21 @@ export function ArenaPage() {
   const handleRoll = () => setCallState("searching");
 
   const handleSkip = () => {
-    setCallState("searching");
-    setConnBorder(null);
-    setActiveGameName(null);
-    setGamesPanelOpen(false);
-    setChatOpen(false);
-    setSocialPanel(false);
+    if (callState === "calling") {
+      // Show scanning animation on right side
+      setIsRightSideScanning(true);
+      // After 2.5 seconds, simulate finding a new person
+      setTimeout(() => {
+        setIsRightSideScanning(false);
+      }, 2500);
+    } else {
+      setCallState("searching");
+      setConnBorder(null);
+      setActiveGameName(null);
+      setGamesPanelOpen(false);
+      setChatOpen(false);
+      setSocialPanel(false);
+    }
   };
 
   const handleEnd = () => {
@@ -512,23 +524,67 @@ export function ArenaPage() {
           )}
 
           {callState === "calling" && (
-            <div style={{ flex: 1, position: "relative" }}>
-              {connBorder && <div style={{ position: "absolute", inset: 0, zIndex: 50, pointerEvents: "none", boxShadow: connBorder === "green" ? "inset 0 0 0 3px #28A745" : `inset 0 0 0 3px ${T.accent}`, animation: "border-glow-pulse 1.2s ease-in-out 3" }} />}
-              <PeerCameraPlaceholder />
-              <div style={{ position: "absolute", top: "1rem", right: "1rem", width: "280px", height: "180px", borderRadius: "14px", border: `2px solid rgba(77,217,192,0.2)`, overflow: "hidden", zIndex: 20 }}>
-                <CameraView videoRef={ownVideoRef} isMuted videoOn={videoOn} camError={camError} label="You" style={{ position: "absolute", inset: 0 }} />
-                <div style={{ position: "absolute", bottom: "0.3rem", left: "0.4rem", zIndex: 5 }}>
-                  <span style={{ fontSize: "0.58rem", fontWeight: 700, background: `rgba(77,217,192,0.75)`, borderRadius: "4px", padding: "0.1rem 0.35rem", color: T.bg }}>{ME.name.split(" ")[0]}</span>
+            <div style={{ flex: 1, display: "flex", position: "relative", gap: 0 }}>
+              {/* LEFT SCREEN - YOU */}
+              <div style={{ flex: 1, position: "relative", borderRight: `1px solid rgba(77,217,192,0.15)` }}>
+                <div style={{ borderRadius: "20px 0 0 20px", overflow: "hidden", height: "100%" }}>
+                  <CameraView videoRef={ownVideoRef} isMuted videoOn={videoOn} camError={camError} label="You" style={{ position: "absolute", inset: 0 }} />
+                </div>
+                {/* Flair - Top Left */}
+                <div style={{ position: "absolute", top: "1rem", left: "1rem", zIndex: 20 }}>
+                  <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E8", borderRadius: "10px", padding: "8px 12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "2px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: 500, color: "#1A1A1A" }}>{ME.name.split(" ")[0]}</span>
+                      <span style={{ fontSize: "10px", fontWeight: 500, color: "#1A1A1A", background: "#F4F4F4", borderRadius: "4px", padding: "0.05rem 0.3rem" }}>{ME.flair}</span>
+                    </div>
+                    <p style={{ fontSize: "11px", color: "#888888", margin: 0 }}>{ME.college}</p>
+                  </div>
                 </div>
               </div>
-              <div style={{ position: "absolute", bottom: "1rem", left: "1rem", zIndex: 20 }}>
-                <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E8", borderRadius: "10px", padding: "10px 14px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", marginBottom: "3px" }}>
-                    <span style={{ fontSize: "13px", fontWeight: 500, color: "#1A1A1A" }}>{PEER.name}</span>
-                    <span style={{ fontSize: "11px", fontWeight: 500, color: "#1A1A1A", background: "#F4F4F4", borderRadius: "5px", padding: "0.1rem 0.4rem" }}>{PEER.flair}</span>
+
+              {/* RIGHT SCREEN - PEER / SCANNING */}
+              <div style={{ flex: 1, position: "relative", borderRadius: "0 20px 20px 0", overflow: "hidden" }}>
+                {!isRightSideScanning && (
+                  <>
+                    <PeerCameraPlaceholder />
+                    {/* Flair - Top Left */}
+                    <div style={{ position: "absolute", top: "1rem", left: "1rem", zIndex: 20 }}>
+                      <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E8", borderRadius: "10px", padding: "8px 12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "2px" }}>
+                          <span style={{ fontSize: "12px", fontWeight: 500, color: "#1A1A1A" }}>{PEER.name.split(" ")[0]}</span>
+                          <span style={{ fontSize: "10px", fontWeight: 500, color: "#1A1A1A", background: "#F4F4F4", borderRadius: "4px", padding: "0.05rem 0.3rem" }}>{PEER.flair}</span>
+                        </div>
+                        <p style={{ fontSize: "11px", color: "#888888", margin: 0 }}>{PEER.college}</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {isRightSideScanning && (
+                  <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at center, #162030 0%, ${T.bg} 75%)`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", zIndex: 25 }}>
+                    {[0,1,2,3].map((i) => (
+                      <div key={i} style={{ position: "absolute", width: `${140+i*90}px`, height: `${140+i*90}px`, borderRadius: "50%", border: `1.5px solid rgba(77,217,192,${0.14-i*0.03})`, animation: `radar-expand 2.4s ${i*0.6}s ease-out infinite`, pointerEvents: "none" }} />
+                    ))}
+                    <div style={{ position: "absolute", width: "320px", height: "320px", borderRadius: "50%", overflow: "hidden", pointerEvents: "none" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "conic-gradient(from 0deg, rgba(77,217,192,0.08) 0deg, transparent 60deg)", animation: "radar-spin 2s linear infinite", borderRadius: "50%" }} />
+                    </div>
+                    <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
+                      <div style={{ position: "relative" }}>
+                        <div style={{ width: "80px", height: "80px", borderRadius: "50%", background: `linear-gradient(135deg, ${T.accent}, #2ABDA6)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", fontWeight: 900, color: T.bg }}>🔍</div>
+                        <div style={{ position: "absolute", inset: "-10px", border: `2px dashed rgba(77,217,192,0.3)`, borderRadius: "50%", animation: "spin-slow 3s linear infinite" }} />
+                        <div style={{ position: "absolute", inset: "-22px", border: `1.5px dashed rgba(77,217,192,0.12)`, borderRadius: "50%", animation: "spin-rev 5s linear infinite" }} />
+                      </div>
+                      <div style={{ textAlign: "center" }}>
+                        <p style={{ fontSize: "1rem", fontWeight: 900, color: T.textPrim, margin: "0 0 0.3rem", letterSpacing: "-0.5px" }}>Finding next match</p>
+                        <p style={{ fontSize: "0.7rem", color: T.textMid, fontWeight: 500, margin: 0 }}>Scanning network…</p>
+                      </div>
+                    </div>
                   </div>
-                  <p style={{ fontSize: "12px", color: "#888888", margin: 0 }}>{PEER.college}</p>
-                </div>
+                )}
+              </div>
+
+              {/* BRANDING - Bottom Left */}
+              <div style={{ position: "absolute", bottom: "1rem", left: "1rem", zIndex: 15 }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "-0.3px", background: "linear-gradient(90deg, #4DD9C0 0%, #A855F7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Campzzy.in</span>
               </div>
             </div>
           )}
